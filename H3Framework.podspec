@@ -5,11 +5,11 @@ Pod::Spec.new do |spec|
   spec.description  =<<-DESC
 iOS wrapper over Uber H3 from https://github.com/uber/h3 that can we used with Swift.
                      DESC
-  spec.homepage     = "https://github.com/long1eu/h3-ios"
+  spec.homepage     = "https://github.com/kennic/h3-ios"
   spec.license      = "Apache 2.0 License"
   spec.author       = { "Razvan Cristian Lung" => "lung.razvan@gmail.com" }
 
-  spec.source       = { :git => "https://github.com/long1eu/h3-ios.git", :tag => "v#{spec.version}" }
+  spec.source       = { :git => "https://github.com/kennic/h3-ios.git", :tag => "v#{spec.version}" }
 
   spec.source_files = 'Classes/H3/src/h3lib/**/*'
   spec.public_header_files = 'Classes/H3/src/h3lib/include/h3api.h'
