@@ -45,6 +45,11 @@ typedef struct {
     int k;  ///< k component
 } CoordIJK;
 
+typedef struct {
+	int i;  ///< i component
+	int j;  ///< j component
+} CoordIJ;
+
 /** @brief CoordIJK unit vectors corresponding to the 7 H3 digits.
  */
 static const CoordIJK UNIT_VECS[] = {
