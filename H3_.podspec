@@ -1,5 +1,5 @@
 Pod::Spec.new do |spec|
-  spec.name         = "H3"
+  spec.name         = "H3_"
   spec.version      = "3.5"
   spec.summary      = "iOS wrapper over Uber H3 from https://github.com/uber/h3"
   spec.description  =<<-DESC
