@@ -24,7 +24,6 @@
 #include "constants.h"
 #include "geoCoord.h"
 #include "h3Index.h"
-#include "baseCells.h"
 
 /**
  * Whether the given bounding box crosses the antimeridian
@@ -86,23 +85,6 @@ double _hexRadiusKm(H3Index h3Index) {
     H3_EXPORT(h3ToGeo)(h3Index, &h3Center);
     H3_EXPORT(h3ToGeoBoundary)(h3Index, &h3Boundary);
     return _geoDistKm(&h3Center, h3Boundary.verts);
-}
-
-/**
- * Generates all pentagons at the specified resolution
- *
- * @param res The resolution to produce pentagons at.
- * @param out Output array. Must be of size pentagonIndexCount().
- */
-void H3_EXPORT(getPentagonIndexes)(int res, H3Index* out) {
-	int i = 0;
-	for (int bc = 0; bc < NUM_BASE_CELLS; bc++) {
-		if (_isBaseCellPentagon(bc)) {
-			H3Index pentagon;
-			setH3Index(&pentagon, res, bc, 0);
-			out[i++] = pentagon;
-		}
-	}
 }
 
 /**
