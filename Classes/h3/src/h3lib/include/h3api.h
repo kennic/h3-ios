@@ -54,13 +54,6 @@ extern "C" {
 /** @brief the H3Index fits within a 64-bit unsigned integer */
 typedef uint64_t H3Index;
 
-/* library version numbers generated from VERSION file */
-// clang-format off
-#define H3_VERSION_MAJOR @H3_VERSION_MAJOR@
-#define H3_VERSION_MINOR @H3_VERSION_MINOR@
-#define H3_VERSION_PATCH @H3_VERSION_PATCH@
-// clang-format on
-
 /** Maximum number of cell boundary vertices; worst case is pentagon:
  *  5 original verts + 5 edge crossings
  */
@@ -135,16 +128,6 @@ struct LinkedGeoPolygon {
     LinkedGeoLoop *last;
     LinkedGeoPolygon *next;
 };
-
-/** @struct CoordIJ
- * @brief IJ hexagon coordinates
- *
- * Each axis is spaced 120 degrees apart.
- */
-typedef struct {
-    int i;  ///< i component
-    int j;  ///< j component
-} CoordIJ;
 
 /** @defgroup geoToH3 geoToH3
  * Functions for geoToH3
@@ -280,17 +263,6 @@ double H3_EXPORT(edgeLengthM)(int res);
  */
 /** @brief number of hexagons for a given resolution */
 int64_t H3_EXPORT(numHexagons)(int res);
-/** @} */
-
-/** @defgroup getRes0Indexes getRes0Indexes
- * Functions for getRes0Indexes
- * @{
- */
-/** @brief returns the number of resolution 0 indexes */
-int H3_EXPORT(res0IndexCount)();
-
-/** @brief provides all base cells */
-void H3_EXPORT(getRes0Indexes)(H3Index *out);
 /** @} */
 
 /** @defgroup h3GetResolution h3GetResolution
@@ -475,35 +447,6 @@ void H3_EXPORT(getH3UnidirectionalEdgeBoundary)(H3Index edge, GeoBoundary *gb);
  */
 /** @brief Returns grid distance between two indexes */
 int H3_EXPORT(h3Distance)(H3Index origin, H3Index h3);
-/** @} */
-
-/** @defgroup h3Line h3Line
- * Functions for h3Line
- * @{
- */
-/** @brief Number of indexes in a line connecting two indexes */
-int H3_EXPORT(h3LineSize)(H3Index start, H3Index end);
-
-/** @brief Line of h3 indexes connecting two indexes */
-int H3_EXPORT(h3Line)(H3Index start, H3Index end, H3Index *out);
-/** @} */
-
-/** @defgroup experimentalH3ToLocalIj experimentalH3ToLocalIj
- * Functions for experimentalH3ToLocalIj
- * @{
- */
-/** @brief Returns two dimensional coordinates for the given index */
-int H3_EXPORT(experimentalH3ToLocalIj)(H3Index origin, H3Index h3,
-                                       CoordIJ *out);
-/** @} */
-
-/** @defgroup experimentalLocalIjToH3 experimentalLocalIjToH3
- * Functions for experimentalLocalIjToH3
- * @{
- */
-/** @brief Returns index for the given two dimensional coordinates */
-int H3_EXPORT(experimentalLocalIjToH3)(H3Index origin, const CoordIJ *ij,
-                                       H3Index *out);
 /** @} */
 
 #ifdef __cplusplus

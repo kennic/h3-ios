@@ -24,6 +24,7 @@
 #include "constants.h"
 #include "geoCoord.h"
 #include "h3Index.h"
+#include "baseCells.h"
 
 /**
  * Whether the given bounding box crosses the antimeridian
@@ -88,34 +89,76 @@ double _hexRadiusKm(H3Index h3Index) {
 }
 
 /**
- * Get the radius of the bbox in hexagons - i.e. the radius of a k-ring centered
- * on the bbox center and covering the entire bbox.
- * @param  bbox Bounding box to measure
- * @param  res  Resolution of hexagons to use in measurement
- * @return      Radius in hexagons
+ * Generates all pentagons at the specified resolution
+ *
+ * @param res The resolution to produce pentagons at.
+ * @param out Output array. Must be of size pentagonIndexCount().
  */
-int bboxHexRadius(const BBox* bbox, int res) {
-    // Determine the center of the bounding box
-    GeoCoord center;
-    bboxCenter(bbox, &center);
+void H3_EXPORT(getPentagonIndexes)(int res, H3Index* out) {
+	int i = 0;
+	for (int bc = 0; bc < NUM_BASE_CELLS; bc++) {
+		if (_isBaseCellPentagon(bc)) {
+			H3Index pentagon;
+			setH3Index(&pentagon, res, bc, 0);
+			out[i++] = pentagon;
+		}
+	}
+}
 
-    // Use a vertex on the side closest to the equator, to ensure the longest
-    // radius in cases with significant distortion. East/west is arbitrary.
-    double lat =
-        fabs(bbox->north) > fabs(bbox->south) ? bbox->south : bbox->north;
-    GeoCoord vertex = {lat, bbox->east};
+/**
+ * bboxHexEstimate returns an estimated number of hexagons that fit
+ *                 within the cartesian-projected bounding box
+ *
+ * @param bbox the bounding box to estimate the hexagon fill level
+ * @param res the resolution of the H3 hexagons to fill the bounding box
+ * @return the estimated number of hexagons to fill the bounding box
+ */
+int bboxHexEstimate(const BBox* bbox, int res) {
+    // Get the area of the pentagon as the maximally-distorted area possible
+    H3Index pentagons[12] = {0};
+    H3_EXPORT(getPentagonIndexes)(res, pentagons);
+    double pentagonRadiusKm = _hexRadiusKm(pentagons[0]);
+    // Area of a regular hexagon is 3/2*sqrt(3) * r * r
+    // The pentagon has the most distortion (smallest edges) and shares its
+    // edges with hexagons, so the most-distorted hexagons have this area
+    double pentagonAreaKm2 =
+        2.59807621135 * pentagonRadiusKm * pentagonRadiusKm;
 
-    // Determine the length of the bounding box "radius" to then use
-    // as a circle on the earth that the k-rings must be greater than
-    double bboxRadiusKm = _geoDistKm(&center, &vertex);
+    // Then get the area of the bounding box of the geofence in question
+    GeoCoord p1, p2;
+    p1.lat = bbox->north;
+    p1.lon = bbox->east;
+    p2.lat = bbox->south;
+    p2.lon = bbox->east;
+    double h = _geoDistKm(&p1, &p2);
+    p2.lat = bbox->north;
+    p2.lon = bbox->west;
+    double w = _geoDistKm(&p1, &p2);
 
-    // Determine the radius of the center hexagon
-    double centerHexRadiusKm = _hexRadiusKm(H3_EXPORT(geoToH3)(&center, res));
+    // Divide the two to get an estimate of the number of hexagons needed
+    int estimate = (int)ceil(w * h / pentagonAreaKm2);
+    if (estimate == 0) estimate = 1;
+    return estimate;
+}
 
-    // The closest point along a hexagon drawn through the center points
-    // of a k-ring aggregation is exactly 1.5 radii of the hexagon. For
-    // any orientation of the GeoJSON encased in a circle defined by the
-    // bounding box radius and center, it is guaranteed to fit in this k-ring
-    // Rounded *up* to guarantee containment
-    return (int)ceil(bboxRadiusKm / (1.5 * centerHexRadiusKm));
+/**
+ * lineHexEstimate returns an estimated number of hexagons that trace
+ *                 the cartesian-projected line
+ *
+ *  @param origin the origin coordinates
+ *  @param destination the destination coordinates
+ *  @param res the resolution of the H3 hexagons to trace the line
+ *  @return the estimated number of hexagons required to trace the line
+ */
+int lineHexEstimate(const GeoCoord* origin, const GeoCoord* destination,
+                    int res) {
+    // Get the area of the pentagon as the maximally-distorted area possible
+    H3Index pentagons[12] = {0};
+    H3_EXPORT(getPentagonIndexes)(res, pentagons);
+    double pentagonRadiusKm = _hexRadiusKm(pentagons[0]);
+
+    double dist = _geoDistKm(origin, destination);
+    int estimate = (int)ceil(dist / (2 * pentagonRadiusKm));
+    if (estimate == 0) estimate = 1;
+    return estimate;
 }
